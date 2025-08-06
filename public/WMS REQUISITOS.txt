@@ -1,0 +1,56 @@
+ Recepción UBICACION RECEP
+•Por unidad /01
+--SKU
+--Descripcion 
+--Fecha Recepción 
+--Lote
+--Cantidad
+--Contenedor de Recepción 
+--Usuario de Recepción y Contraseña 
+•Por Pallet /02
+--SKU
+--Descripcion 
+--Fecha Recepción 
+--Lote
+--Cantidad
+--Contenedor de Recepción 
+--Usuario de Recepción y Contraseña
+
+
+●Inventario
+•Movimientos
+--ubicación 
+--SKU
+--cantidad
+--ENTER
+--Ubicacion final
+•Consultas
+--Ingresar Ubicacion 
+--Result:SKU/Descripción/Lote/Fecha/Cantidad/RotaciónProducto
+•Conteo cíclico 
+--Ingresar Ubicación 
+Result:SKU/Descripción/Lote/Fecha/Cantidad
+--Ingresar Cantidad
+--Seguro?
+=>Tabla revisar
+
+
+●Logistica inversa
+•Ingreso
+--SKU
+--Cantidad 
+--Orden de compra o factura
+--Motivo devolución 
+UBICACION: L.I
+
+●Almacenaje
+--Etiqueta Contenedora Pallet 
+Result:SKU/Descripción/Lote/Fecha/Cantidad
+--Ubicación De almacenaje
+
+
+●Ubicaciones
+•Mermas
+•Recepción 
+•Ubicaciones de Almacenaje
+•Muelles de carga

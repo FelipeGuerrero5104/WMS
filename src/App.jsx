@@ -6,7 +6,6 @@ import Picking from "./Pages/Picking"
 import Recep from "./Pages/Recep"
 import ReverseLog from "./Pages/ReverseLog"
 import Storage from "./Pages/Storage"
-import OpcionsRecep from "./O.Recep/OpcionsR"
 import OpcionsDispatch from "./O.Dispatch/OpcionsD"
 import OpcionsInventory from "./O.Inventory/OpcionsI"
 import Footer from "./components/Footer"
@@ -38,7 +37,6 @@ function App() {
 
 
         <Route path="/Recep" element={<Recep/>}/>
-        <Route path="/Recep/Opcions" element={<OpcionsRecep/>}/>
         <Route path="/Recep/Unity" element={<UnityR/>}/>
         <Route path="/Recep/Quantity" element={<QuantityR/>}/>
 
@@ -54,3 +52,4 @@ function App() {
 }
 
 export default App
+
