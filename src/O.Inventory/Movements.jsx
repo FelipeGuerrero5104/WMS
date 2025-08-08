@@ -28,7 +28,7 @@ export default function Movements() {
     <div>
       <div className="min-h-screen bg-[#052a34] text-white p-4 flex flex-col items-center justify-center gap-8">
         <TituloMovimientos />
-        {/* Input etiqueta */}
+
         <div className="flex gap-2 mb-4 max-w-md w-full">
           <input
             type="text"
@@ -50,7 +50,6 @@ export default function Movements() {
           <p className="text-green-400 mb-2 max-w-md w-full">{mensaje}</p>
         )}
 
-        {/* Datos del pallet */}
         {pallet && (
           <div className="bg-[#0a3b45] text-white p-4 flex flex-col gap-y-3 rounded w-full max-w-md">
             <p>
@@ -82,7 +81,6 @@ export default function Movements() {
               ))}
             </select>
 
-            {/* Tipo de movimiento */}
             <div className="mt-4">
               <label className="mr-2">
                 <input
@@ -106,7 +104,6 @@ export default function Movements() {
               </label>
             </div>
 
-            {/* Cantidad a mover si es por unidades */}
             {modoMovimiento === "unidades" && (
               <input
                 type="number"

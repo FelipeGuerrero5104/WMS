@@ -7,7 +7,7 @@ export default function useMovements() {
   const [ubicaciones, setUbicaciones] = useState([]);
   const [ubicacionDestino, setUbicacionDestino] = useState("");
   const [cantidadMover, setCantidadMover] = useState("");
-  const [modoMovimiento, setModoMovimiento] = useState("pallet"); // "pallet" o "unidades"
+  const [modoMovimiento, setModoMovimiento] = useState("pallet");
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
   const [usuarioMovimiento, setUsuarioMovimiento] = useState("");

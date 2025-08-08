@@ -13,7 +13,6 @@ export default function useQuantityR() {
     e.preventDefault();
 
     try {
-      // Verificar código de autorización
       const { data: usuario, error: errorUsuario } = await supabase
         .from("usuarios")
         .select("*")
@@ -25,7 +24,6 @@ export default function useQuantityR() {
         return;
       }
 
-      // Validar que SKU exista en products
       const { data: productoExistente, error: errorProducto } = await supabase
         .from("products")
         .select("*")
@@ -37,7 +35,6 @@ export default function useQuantityR() {
         return;
       }
 
-      // Crear recepción
       const { data: recepcion, error: errorRecep } = await supabase
         .from("receptions")
         .insert([
@@ -52,7 +49,6 @@ export default function useQuantityR() {
 
       if (errorRecep) throw errorRecep;
 
-      // Crear o actualizar lote
       const { data: loteData, error: errorLote } = await supabase
         .from("lots")
         .upsert([{ sku, lote, fecha_vencimiento: vencimiento }])
@@ -61,7 +57,6 @@ export default function useQuantityR() {
 
       if (errorLote) throw errorLote;
 
-      // Detalle de recepción
       const { error: errorDetalle } = await supabase
         .from("reception_detail")
         .insert([
@@ -74,7 +69,6 @@ export default function useQuantityR() {
 
       if (errorDetalle) throw errorDetalle;
 
-      // Inventario en ubicación 1 (recepción)
       const { error: errorInventario } = await supabase
         .from("inventory")
         .insert([
@@ -87,17 +81,14 @@ export default function useQuantityR() {
 
       if (errorInventario) throw errorInventario;
 
-      // Insertar en storage (sin ubicación asignada aún)
-      const { error: errorStorage } = await supabase
-        .from("storage")
-        .insert([
-          {
-            etiqueta_pallet: contenedor,
-            id_lote: loteData.id_lote,
-            cantidad: Number(cantidad),
-            id_ubicacion: null, // Se asigna cuando se mueve a una ubicación válida
-          },
-        ]);
+      const { error: errorStorage } = await supabase.from("storage").insert([
+        {
+          etiqueta_pallet: contenedor,
+          id_lote: loteData.id_lote,
+          cantidad: Number(cantidad),
+          id_ubicacion: null,
+        },
+      ]);
 
       if (errorStorage) {
         alert("Error al guardar en storage");
@@ -106,7 +97,6 @@ export default function useQuantityR() {
 
       alert("Recepción registrada ✅");
 
-      // Limpiar campos
       setSku("");
       setLote("");
       setVencimiento("");

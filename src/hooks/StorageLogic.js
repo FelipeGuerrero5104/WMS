@@ -10,7 +10,6 @@ export default function useStorageLogic() {
 
   const buscarEtiqueta = async () => {
     try {
-      // Verificar si la etiqueta existe en receptions
       const { data: receptionData, error: errorReception } = await supabase
         .from("receptions")
         .select("id_recepcion")
@@ -23,7 +22,6 @@ export default function useStorageLogic() {
         return;
       }
 
-      // Buscar productos en storage con esa etiqueta
       const { data: storageData, error: errorStorage } = await supabase
         .from("storage")
         .select("id_almacenaje, id_lote, cantidad")
@@ -39,7 +37,6 @@ export default function useStorageLogic() {
 
       const idsLote = storageData.map((item) => item.id_lote);
 
-      // Traer todos los lotes de una vez
       const { data: lotes, error: errorLotes } = await supabase
         .from("lots")
         .select("id_lote, sku, lote, fecha_vencimiento")
@@ -52,7 +49,6 @@ export default function useStorageLogic() {
 
       const skus = lotes.map((l) => l.sku);
 
-      // Traer todos los productos (descripciones) de una vez
       const { data: productosData, error: errorProductos } = await supabase
         .from("products")
         .select("sku, descripcion")
@@ -63,7 +59,6 @@ export default function useStorageLogic() {
         return;
       }
 
-      // Mapear los productos con los detalles de storage
       const productosConDetalle = storageData.map((item) => {
         const lote = lotes.find((l) => l.id_lote === item.id_lote);
         const producto = productosData.find((p) => p.sku === lote?.sku);
@@ -113,7 +108,7 @@ export default function useStorageLogic() {
       if (error) throw error;
 
       alert("Producto movido exitosamente ✅");
-      // Limpiar estado
+
       setEtiqueta("");
       setProductos([]);
       setUbicacionSeleccionada("");

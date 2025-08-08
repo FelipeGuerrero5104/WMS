@@ -35,7 +35,7 @@ export default function useUnityRLogic() {
           {
             tipo_recepcion: "01",
             contenedor_recepcion: contenedor,
-            usuario_recepcion: "pendiente", // Será actualizado después
+            usuario_recepcion: "pendiente",
           },
         ])
         .select()
@@ -54,12 +54,10 @@ export default function useUnityRLogic() {
   const handleAgregarProducto = async (e) => {
     e.preventDefault();
 
-    // Verificar código antes de continuar
     const usuario = await verificarCodigoAutorizacion();
     if (!usuario) return;
 
     try {
-      // Validar que SKU exista en products
       const { data: productoExistente, error: errorProducto } = await supabase
         .from("products")
         .select("*")
@@ -71,7 +69,6 @@ export default function useUnityRLogic() {
         return;
       }
 
-      // Crear o actualizar lote
       const { data: loteData, error: errorLote } = await supabase
         .from("lots")
         .upsert([{ sku, lote, fecha_vencimiento: vencimiento }])
@@ -80,7 +77,6 @@ export default function useUnityRLogic() {
 
       if (errorLote) throw errorLote;
 
-      // Insertar detalle de recepción
       const { error: errorDetalle } = await supabase
         .from("reception_detail")
         .insert([
@@ -93,24 +89,20 @@ export default function useUnityRLogic() {
 
       if (errorDetalle) throw errorDetalle;
 
-      // Insertar en tabla storage
-      const { error: errorStorage } = await supabase
-        .from("storage")
-        .insert([
-          {
-            etiqueta_pallet: contenedor,
-            id_lote: loteData.id_lote,
-            cantidad: Number(cantidad),
-            id_ubicacion: null, // Se asigna al mover manualmente
-          },
-        ]);
+      const { error: errorStorage } = await supabase.from("storage").insert([
+        {
+          etiqueta_pallet: contenedor,
+          id_lote: loteData.id_lote,
+          cantidad: Number(cantidad),
+          id_ubicacion: null,
+        },
+      ]);
 
       if (errorStorage) {
         alert("Error al guardar en storage");
         return;
       }
 
-      // Actualizar usuario de la recepción
       await supabase
         .from("receptions")
         .update({ usuario_recepcion: usuario.nombre || "autorizado" })

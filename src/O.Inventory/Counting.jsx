@@ -38,7 +38,6 @@ export default function Counting() {
         <TituloConteo />
 
         <div className="max-w-lg w-full bg-[#0a3b45] p-6 rounded flex flex-col gap-4">
-          {/* Input Ubicación */}
           <label className="font-semibold " htmlFor="ubicacion">
             Ingrese Ubicación (ID o descripción)
           </label>
@@ -64,7 +63,6 @@ export default function Counting() {
             </p>
           )}
 
-          {/* Tabs productos */}
           {productosUbicacion.length > 0 && (
             <div className="mt-4">
               <div className="flex gap-2 border-b border-gray-600">
@@ -105,7 +103,6 @@ export default function Counting() {
             </div>
           )}
 
-          {/* Input Lote / SKU */}
           <label className="font-semibold mt-6" htmlFor="lote">
             Ingrese Lote o SKU para conteo
           </label>
@@ -125,14 +122,13 @@ export default function Counting() {
             </button>
           </div>
 
-          {/* Mostrar lote válido */}
           {loteValido && (
             <p className="text-green-400">
-              Lote encontrado: {loteValido.lots.lote} - SKU: {loteValido.lots.sku}
+              Lote encontrado: {loteValido.lots.lote} - SKU:{" "}
+              {loteValido.lots.sku}
             </p>
           )}
 
-          {/* Crear nuevo lote/SKU si no existe */}
           {!loteValido && inputLote.trim() && (
             <div className="mt-4 bg-[#144d56] p-4 rounded">
               <h3 className="font-semibold mb-2 text-white">
@@ -169,15 +165,15 @@ export default function Counting() {
             </div>
           )}
 
-          {/* Mostrar cantidad sistema si lote válido */}
           {cantidadSistema !== null && loteValido && (
             <div>
               <label className="font-semibold">Cantidad Sistema</label>
-              <p className="bg-[#128E95] rounded p-2 text-white">{cantidadSistema}</p>
+              <p className="bg-[#128E95] rounded p-2 text-white">
+                {cantidadSistema}
+              </p>
             </div>
           )}
 
-          {/* Cantidad física */}
           {loteValido && (
             <>
               <label className="font-semibold" htmlFor="cantidadFisica">
@@ -194,7 +190,6 @@ export default function Counting() {
             </>
           )}
 
-          {/* Usuario conteo */}
           <label className="font-semibold" htmlFor="usuarioConteo">
             Usuario que realiza el conteo
           </label>
@@ -206,11 +201,9 @@ export default function Counting() {
             onChange={(e) => setUsuarioConteo(e.target.value)}
           />
 
-          {/* Mensajes */}
           {error && <p className="text-red-400">{error}</p>}
           {mensaje && <p className="text-green-400">{mensaje}</p>}
 
-          {/* Botón Guardar */}
           <button
             onClick={guardarConteo}
             className="bg-[#128E95] hover:bg-green-600 transition-colors py-2 rounded font-semibold mt-4"
@@ -224,4 +217,3 @@ export default function Counting() {
     </div>
   );
 }
-

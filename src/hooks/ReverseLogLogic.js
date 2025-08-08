@@ -38,7 +38,6 @@ export default function useReverseLog() {
     if (!usuario) return;
 
     try {
-      // Validar que SKU exista
       const { data: productoExistente, error: errorProducto } = await supabase
         .from("products")
         .select("*")
@@ -50,13 +49,11 @@ export default function useReverseLog() {
         return;
       }
 
-      // Validar contenedor no vacío
       if (!contenedor.trim()) {
         alert("Debe ingresar el código del contenedor.");
         return;
       }
 
-      // Crear o actualizar lote
       const { data: loteData, error: errorLote } = await supabase
         .from("lots")
         .upsert([{ sku, lote, fecha_vencimiento: vencimiento }])
@@ -65,7 +62,6 @@ export default function useReverseLog() {
 
       if (errorLote) throw errorLote;
 
-      // Insertar en receptions
       const { data: receptionData, error: errorReception } = await supabase
         .from("receptions")
         .insert([
@@ -80,7 +76,6 @@ export default function useReverseLog() {
 
       if (errorReception) throw errorReception;
 
-      // Insertar en reverse_logistics incluyendo motivo
       const { error: errorRL } = await supabase
         .from("reverse_logistics")
         .insert([
@@ -97,21 +92,17 @@ export default function useReverseLog() {
 
       if (errorRL) throw errorRL;
 
-      // Insertar en storage
-      const { error: errorStorage } = await supabase
-        .from("storage")
-        .insert([
-          {
-            etiqueta_pallet: contenedor,
-            id_lote: loteData.id_lote,
-            cantidad: Number(cantidad),
-            id_ubicacion: null,
-          },
-        ]);
+      const { error: errorStorage } = await supabase.from("storage").insert([
+        {
+          etiqueta_pallet: contenedor,
+          id_lote: loteData.id_lote,
+          cantidad: Number(cantidad),
+          id_ubicacion: null,
+        },
+      ]);
 
       if (errorStorage) throw errorStorage;
 
-      // Preguntar si desea ingresar otro producto
       const agregarOtro = confirm(
         "Producto ingresado en logística inversa ✅ ¿Deseas ingresar otro producto?"
       );
