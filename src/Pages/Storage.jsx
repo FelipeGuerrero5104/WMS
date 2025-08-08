@@ -8,13 +8,12 @@ export default function Storage() {
   const [ubicaciones, setUbicaciones] = useState([]);
   const [ubicacionSeleccionada, setUbicacionSeleccionada] = useState("");
 
-  // Buscar si existe el contenedor en receptions y obtener productos asociados en storage
   const buscarEtiqueta = async () => {
     try {
-      // Validar que contenedor exista en receptions
+      // Verificar si la etiqueta existe en receptions
       const { data: receptionData, error: errorReception } = await supabase
         .from("receptions")
-        .select("*")
+        .select("id_recepcion")
         .eq("contenedor_recepcion", etiqueta)
         .single();
 
@@ -24,57 +23,68 @@ export default function Storage() {
         return;
       }
 
-      // Obtener todos los storage que tengan esa etiqueta_pallet = etiqueta
+      // Buscar productos en storage con esa etiqueta
       const { data: storageData, error: errorStorage } = await supabase
         .from("storage")
-        .select("*")
+        .select("id_almacenaje, id_lote, cantidad")
         .eq("etiqueta_pallet", etiqueta);
 
-      if (errorStorage) {
-        alert("Error al obtener datos de almacenamiento ❌");
-        return;
-      }
-
-      if (!storageData || storageData.length === 0) {
-        alert("No hay productos asociados a este contenedor en almacenamiento ❌");
+      if (errorStorage || !storageData || storageData.length === 0) {
+        alert(
+          "No hay productos asociados a este contenedor en almacenamiento ❌"
+        );
         setProductos([]);
         return;
       }
 
-      // Para cada storage obtenemos datos de lote y producto
-      const productosConDetalle = await Promise.all(
-        storageData.map(async (item) => {
-          const { data: loteData } = await supabase
-            .from("lots")
-            .select("*")
-            .eq("id_lote", item.id_lote)
-            .single();
+      const idsLote = storageData.map((item) => item.id_lote);
 
-          const { data: productoData } = await supabase
-            .from("products")
-            .select("descripcion")
-            .eq("sku", loteData?.sku)
-            .single();
+      // Traer todos los lotes de una vez
+      const { data: lotes, error: errorLotes } = await supabase
+        .from("lots")
+        .select("id_lote, sku, lote, fecha_vencimiento")
+        .in("id_lote", idsLote);
 
-          return {
-            id_almacenaje: item.id_almacenaje,
-            cantidad: item.cantidad,
-            sku: loteData?.sku,
-            lote: loteData?.lote,
-            vencimiento: loteData?.fecha_vencimiento,
-            descripcion: productoData?.descripcion || "Sin descripción",
-          };
-        })
-      );
+      if (errorLotes || !lotes) {
+        alert("Error al obtener detalles de los lotes ❌");
+        return;
+      }
+
+      const skus = lotes.map((l) => l.sku);
+
+      // Traer todos los productos (descripciones) de una vez
+      const { data: productosData, error: errorProductos } = await supabase
+        .from("products")
+        .select("sku, descripcion")
+        .in("sku", skus);
+
+      if (errorProductos || !productosData) {
+        alert("Error al obtener productos ❌");
+        return;
+      }
+
+      // Mapear los productos con los detalles de storage
+      const productosConDetalle = storageData.map((item) => {
+        const lote = lotes.find((l) => l.id_lote === item.id_lote);
+        const producto = productosData.find((p) => p.sku === lote?.sku);
+
+        return {
+          id_almacenaje: item.id_almacenaje,
+          cantidad: item.cantidad,
+          sku: lote?.sku || "N/A",
+          lote: lote?.lote || "N/A",
+          vencimiento: lote?.fecha_vencimiento || "N/A",
+          descripcion: producto?.descripcion || "Sin descripción",
+        };
+      });
 
       setProductos(productosConDetalle);
     } catch (error) {
       console.error("Error al buscar la etiqueta:", error);
-      alert("Error inesperado al buscar etiqueta");
+      alert("Error inesperado al buscar etiqueta ❌");
     }
   };
 
-  // Obtener ubicaciones válidas (excepto id_ubicacion = 99)
   const obtenerUbicaciones = async () => {
     const { data, error } = await supabase
       .from("locations")
@@ -88,7 +98,6 @@ export default function Storage() {
     obtenerUbicaciones();
   }, []);
 
-  // Mover pallet a la ubicación seleccionada (actualiza storage.id_ubicacion)
   const moverPallet = async (id_almacenaje) => {
     if (!ubicacionSeleccionada) {
       alert("Debes seleccionar una ubicación");
@@ -104,7 +113,7 @@ export default function Storage() {
       if (error) throw error;
 
       alert("Producto movido exitosamente ✅");
-      // Limpiar estados para nueva operación
+      // Limpiar estado
       setEtiqueta("");
       setProductos([]);
       setUbicacionSeleccionada("");
@@ -116,7 +125,7 @@ export default function Storage() {
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center gap-8 bg-[#052a34] px-4 py-8">
-      <h2 className="text-white text-2xl font-bold">Ingreso a ubicación</h2>
+      <h2 className="text-2xl font-semibold sm:text-3xl md:text-4xl lg:text-5xl text-white">ALMACENAMIENTO</h2>
 
       <input
         type="text"
@@ -125,6 +134,7 @@ export default function Storage() {
         placeholder="Etiqueta del contenedor"
         className="border border-white bg-[#128E95] placeholder-white text-white px-4 py-2 rounded w-72 md:w-96"
       />
+
       <button
         onClick={buscarEtiqueta}
         className="bg-white text-[#052a34] px-6 py-2 rounded font-semibold shadow"
@@ -135,12 +145,25 @@ export default function Storage() {
       {productos.length > 0 && (
         <div className="text-white bg-[#0a3b45] p-6 rounded w-full max-w-xl shadow-lg flex flex-col gap-6">
           {productos.map((prod) => (
-            <div key={prod.id_almacenaje} className="border-b border-gray-600 pb-4 last:border-b-0">
-              <p><strong>SKU:</strong> {prod.sku}</p>
-              <p><strong>Descripción:</strong> {prod.descripcion}</p>
-              <p><strong>Lote:</strong> {prod.lote}</p>
-              <p><strong>Vencimiento:</strong> {prod.vencimiento}</p>
-              <p><strong>Cantidad:</strong> {prod.cantidad}</p>
+            <div
+              key={prod.id_almacenaje}
+              className="border-b border-gray-600 pb-4 last:border-b-0"
+            >
+              <p>
+                <strong>SKU:</strong> {prod.sku}
+              </p>
+              <p>
+                <strong>Descripción:</strong> {prod.descripcion}
+              </p>
+              <p>
+                <strong>Lote:</strong> {prod.lote}
+              </p>
+              <p>
+                <strong>Vencimiento:</strong> {prod.vencimiento}
+              </p>
+              <p>
+                <strong>Cantidad:</strong> {prod.cantidad}
+              </p>
 
               <select
                 value={ubicacionSeleccionada}
@@ -165,8 +188,6 @@ export default function Storage() {
           ))}
         </div>
       )}
-
-      <BotonesSiYNo />
     </div>
   );
 }

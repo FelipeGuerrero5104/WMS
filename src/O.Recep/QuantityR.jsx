@@ -20,11 +20,23 @@ export default function QuantityR() {
       const { data: usuario, error: errorUsuario } = await supabase
         .from("usuarios")
         .select("*")
-        .eq("codigo", codigoAutorizacion)
+        .eq("codigo_autorizacion", codigoAutorizacion)
         .single();
 
       if (errorUsuario || !usuario) {
-        alert("Código de autorización inválido ❌");
+        alert("Código de usuario inválido ❌");
+        return;
+      }
+
+      // Validar que SKU exista en products
+      const { data: productoExistente, error: errorProducto } = await supabase
+        .from("products")
+        .select("*")
+        .eq("sku", sku)
+        .single();
+
+      if (errorProducto || !productoExistente) {
+        alert("El SKU no existe");
         return;
       }
 
@@ -65,7 +77,7 @@ export default function QuantityR() {
 
       if (errorDetalle) throw errorDetalle;
 
-      // Inventario
+      // Inventario en ubicación 1 (recepción)
       const { error: errorInventario } = await supabase
         .from("inventory")
         .insert([
@@ -77,6 +89,23 @@ export default function QuantityR() {
         ]);
 
       if (errorInventario) throw errorInventario;
+
+      // Insertar en storage (sin ubicación asignada aún)
+      const { error: errorStorage } = await supabase
+        .from("storage")
+        .insert([
+          {
+            etiqueta_pallet: contenedor,
+            id_lote: loteData.id_lote,
+            cantidad: Number(cantidad),
+            id_ubicacion: null, // Se asigna cuando se mueve a una ubicación válida
+          },
+        ]);
+
+      if (errorStorage) {
+        alert("Error al guardar en storage");
+        return;
+      }
 
       alert("Recepción registrada ✅");
 
@@ -157,3 +186,5 @@ export default function QuantityR() {
     </div>
   );
 }
+
+

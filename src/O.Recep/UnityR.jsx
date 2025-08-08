@@ -18,11 +18,11 @@ export default function UnityR() {
     const { data, error } = await supabase
       .from("usuarios")
       .select("*")
-      .eq("codigo", codigoAutorizacion)
+      .eq("codigo_autorizacion", codigoAutorizacion)
       .single();
 
     if (error || !data) {
-      alert("Código de autorización inválido ❌");
+      alert("Código de usuario inválido ❌");
       return null;
     }
 
@@ -61,6 +61,19 @@ export default function UnityR() {
     if (!usuario) return;
 
     try {
+      // Validar que SKU exista en products
+      const { data: productoExistente, error: errorProducto } = await supabase
+        .from("products")
+        .select("*")
+        .eq("sku", sku)
+        .single();
+
+      if (errorProducto || !productoExistente) {
+        alert("El SKU no existe");
+        return;
+      }
+
+      // Crear o actualizar lote
       const { data: loteData, error: errorLote } = await supabase
         .from("lots")
         .upsert([{ sku, lote, fecha_vencimiento: vencimiento }])
@@ -69,6 +82,7 @@ export default function UnityR() {
 
       if (errorLote) throw errorLote;
 
+      // Insertar detalle de recepción
       const { error: errorDetalle } = await supabase
         .from("reception_detail")
         .insert([
@@ -81,17 +95,22 @@ export default function UnityR() {
 
       if (errorDetalle) throw errorDetalle;
 
-      const { error: errorInventario } = await supabase
-        .from("inventory")
+      // Insertar en tabla storage
+      const { error: errorStorage } = await supabase
+        .from("storage")
         .insert([
           {
+            etiqueta_pallet: contenedor,
             id_lote: loteData.id_lote,
-            id_ubicacion: 1,
             cantidad: Number(cantidad),
+            id_ubicacion: null, // Se asigna al mover manualmente
           },
         ]);
 
-      if (errorInventario) throw errorInventario;
+      if (errorStorage) {
+        alert("Error al guardar en storage");
+        return;
+      }
 
       // Actualizar usuario de la recepción
       await supabase
@@ -110,9 +129,7 @@ export default function UnityR() {
         setCantidad("");
         setCodigoAutorizacion("");
       } else {
-        alert(
-          "Recepción completada y productos enviados a zona de recepción ✅"
-        );
+        alert("Recepción completada ✅");
         setContenedor("");
         setSku("");
         setLote("");
@@ -139,7 +156,9 @@ export default function UnityR() {
             }}
             className="flex flex-col gap-y-8 items-center justify-center w-full px-4"
           >
-            <h1 className="text-2xl font-semibold sm:text-3xl md:text-4xl lg:text-5xl text-white ">INGRESAR CONTENEDOR</h1>
+            <h1 className="text-2xl font-semibold sm:text-3xl md:text-4xl lg:text-5xl text-white">
+              INGRESAR CONTENEDOR
+            </h1>
             <input
               type="text"
               value={contenedor}
@@ -155,7 +174,7 @@ export default function UnityR() {
             onSubmit={handleAgregarProducto}
             className="flex flex-col gap-y-8 items-center justify-center w-full px-4"
           >
-            <IngresoUnidad/>
+            <IngresoUnidad />
             <input
               type="text"
               value={sku}
@@ -203,3 +222,4 @@ export default function UnityR() {
     </div>
   );
 }
+
