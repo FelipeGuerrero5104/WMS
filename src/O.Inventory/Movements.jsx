@@ -39,7 +39,7 @@ export default function Movements() {
           />
           <button
             onClick={buscarPallet}
-            className="bg-white text-[#052a34] px-6 py-2 rounded font-semibold shadow"
+            className="bg-white text-[#052a34] px-3 py-2 rounded font-semibold shadow"
           >
             Buscar
           </button>
